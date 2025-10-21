@@ -29,6 +29,27 @@ import (
 	"github.com/cloudwego/eino-examples/adk/multiagent/plan-execute-replan/agent"
 )
 
+// 创建一个自定义的历史重写器
+// func customRewriter(ctx context.Context, entries []*adk.HistoryEntry) ([]adk.Message, error) {
+// 	// 自定义处理逻辑
+// 	messages := make([]adk.Message, 0, len(entries))
+// 	for _, entry := range entries {
+// 		// 根据你的需求处理每个历史条目
+// 		if entry.IsUserInput {
+// 			// 处理用户输入
+// 			messages = append(messages, entry.Message)
+// 		} else {
+// 			// 处理其他智能体的消息，可以添加上下文信息
+// 			modifiedMsg := &schema.Message{
+// 				Role:    entry.Message.Role,
+// 				Content: fmt.Sprintf("[%s] %s", entry.AgentName, entry.Message.Content),
+// 			}
+// 			messages = append(messages, modifiedMsg)
+// 		}
+// 	}
+// 	return messages, nil
+// }
+
 func main() {
 	ctx := context.Background()
 
@@ -39,6 +60,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("agent.NewPlanner failed, err: %v", err)
 	}
+
+	// 使用 AgentWithOptions 应用历史重写器,自定义输入消息
+	// agentWithRewriter := adk.AgentWithOptions(ctx, planAgent,
+	// 	adk.WithHistoryRewriter(customRewriter))
 
 	executeAgent, err := agent.NewExecutor(ctx)
 	if err != nil {
@@ -51,6 +76,7 @@ func main() {
 	}
 
 	entryAgent, err := planexecute.New(ctx, &planexecute.Config{
+		// Planner:       agentWithRewriter,
 		Planner:       planAgent,
 		Executor:      executeAgent,
 		Replanner:     replanAgent,

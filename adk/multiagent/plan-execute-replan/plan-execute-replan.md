@@ -1,0 +1,7 @@
+eino框架的上下文管理都是基于context的，compose层的上下文管理叫state，agent层的上下文管理叫session，本质都是通过一个方法，传入context进去，就能获取到上下文
+
+
+plant-excution-replan的逻辑，就是replan节点执行完以后，看有没有调用plan的toocall，有的话，就用toolcall的参数，重新生成一个plan，然后塞到session里，然后又会执行到execution（自己本身就是一个reactAgent，会一直执行直到完成这个step），执行完以后又到replan（上下文里有用户输入，当前计划，以及执行的step）
+
+Agent结构的输入和输出不一样，所以每个agent，都需要自定义一个GenInput函数，用来产生出入消息，这个函数就需要从session里获取信息，然后拼接成input
+graph可以自定义每个节点的输入和输出，所以从明面上就要求上一个节点的输入必须是下一个节点的输出

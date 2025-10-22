@@ -31,11 +31,12 @@ import (
 func NewBookRecommendAgent() adk.Agent {
 	ctx := context.Background()
 
+	//需要在提示词里强制模型使用工具，否则它有时候会使用工具，有时候不使用，每次运行效果可能都不一样，不建议这么做
 	a, err := adk.NewChatModelAgent(ctx, &adk.ChatModelAgentConfig{
 		Name:        "BookRecommender",
 		Description: "An agent that can recommend books",
 		Instruction: `You are an expert book recommender.
-Based on the user's request, use the "search_book" tool to find relevant books. Finally, present the results to the user.`,
+Based on the user's request,use "ask_for_clarification" tool to get the missing information, then use the "search_book" tool to find relevant books. Finally, present the results to the user.`,
 		Model: model.NewChatModel(),
 		ToolsConfig: adk.ToolsConfig{
 			ToolsNodeConfig: compose.ToolsNodeConfig{

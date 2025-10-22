@@ -120,6 +120,8 @@ func Event(event *adk.AgentEvent) {
 			fmt.Printf("\naction: transfer to %v", event.Action.TransferToAgent.DestAgentName)
 		}
 		if event.Action.Interrupted != nil {
+			//用MarshalIndent打印，json会换行展示，比较好看
+			// 因为Data是any类型，可能包含复杂的结构，用%v打印不出来
 			ii, _ := json.MarshalIndent(event.Action.Interrupted.Data, "  ", "  ")
 			fmt.Printf("\naction: interrupted")
 			fmt.Printf("\ninterrupt snapshot: %v", string(ii))

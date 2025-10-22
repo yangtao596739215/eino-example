@@ -20,15 +20,19 @@ import (
 	"context"
 	"fmt"
 	"log"
-
-	"github.com/cloudwego/eino/adk"
+	"os"
 
 	"github.com/cloudwego/eino-examples/adk/common/prints"
 	"github.com/cloudwego/eino-examples/adk/intro/workflow/sequential/subagents"
+	ccb "github.com/cloudwego/eino-ext/callbacks/cozeloop"
+	"github.com/cloudwego/eino/adk"
+	"github.com/cloudwego/eino/callbacks"
+	"github.com/coze-dev/cozeloop-go"
 )
 
 func main() {
 	ctx := context.Background()
+	InitCozeLoopTracing()
 
 	a, err := adk.NewSequentialAgent(ctx, &adk.SequentialAgentConfig{
 		Name:        "ResearchAgent",
@@ -57,4 +61,24 @@ func main() {
 
 		prints.Event(event)
 	}
+}
+
+func InitCozeLoopTracing() {
+	cozeloopApiToken := os.Getenv("COZELOOP_API_TOKEN")
+	cozeloopWorkspaceID := os.Getenv("COZELOOP_WORKSPACE_ID") // use cozeloop trace, from https://loop.coze.cn/open/docs/cozeloop/go-sdk#4a8c980e
+
+	fmt.Println("cozeloopApiToken", cozeloopApiToken)
+	fmt.Println("cozeloopWorkspaceID", cozeloopWorkspaceID)
+	if cozeloopApiToken == "" || cozeloopWorkspaceID == "" {
+		return
+	}
+	client, err := cozeloop.NewClient(
+		cozeloop.WithAPIToken(cozeloopApiToken),
+		cozeloop.WithWorkspaceID(cozeloopWorkspaceID),
+	)
+	if err != nil {
+		panic(err)
+	}
+	cozeloop.SetDefaultClient(client)
+	callbacks.AppendGlobalHandlers(ccb.NewLoopHandler(client))
 }

@@ -75,6 +75,7 @@ func Builder[I, O, S any](ctx context.Context, genFunc compose.GenLocalState[S])
 		compose.END:                   true,
 	}
 
+	// 整个方法标了范性，但是第一个node的实现确是写死的类型，感觉不标范姓，直接定好更易读一些
 	coordinatorGraph := NewCAgent[I, O](ctx)
 	plannerGraph := NewPlanner[I, O](ctx)
 	reporterGraph := NewReporter[I, O](ctx)
@@ -93,6 +94,7 @@ func Builder[I, O, S any](ctx context.Context, genFunc compose.GenLocalState[S])
 	_ = g.AddGraphNode(consts.BackgroundInvestigator, bIGraph, compose.WithNodeName(consts.BackgroundInvestigator))
 	_ = g.AddGraphNode(consts.Human, human, compose.WithNodeName(consts.Human))
 
+	//动态边
 	_ = g.AddBranch(consts.Coordinator, compose.NewGraphBranch(agentHandOff, outMap))
 	_ = g.AddBranch(consts.Planner, compose.NewGraphBranch(agentHandOff, outMap))
 	_ = g.AddBranch(consts.Reporter, compose.NewGraphBranch(agentHandOff, outMap))
@@ -102,6 +104,7 @@ func Builder[I, O, S any](ctx context.Context, genFunc compose.GenLocalState[S])
 	_ = g.AddBranch(consts.BackgroundInvestigator, compose.NewGraphBranch(agentHandOff, outMap))
 	_ = g.AddBranch(consts.Human, compose.NewGraphBranch(agentHandOff, outMap))
 
+	//固定边
 	_ = g.AddEdge(compose.START, consts.Coordinator)
 
 	r, err := g.Compile(ctx,

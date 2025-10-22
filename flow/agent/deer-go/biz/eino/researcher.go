@@ -119,6 +119,11 @@ func modifyInputfunc(ctx context.Context, input []*schema.Message) []*schema.Mes
 	return input
 }
 
+// 检查模型返回的流中是否包含工具调用
+// 如果包含，则返回true，否则返回false
+// eino框架的设计缺陷，默认只会检查第一个chunk，有些的工具调用不在第一个chunk返回，因此需要自定义检查器
+// 这里感觉没必要决定是否有工具调用提出来，还需要copy一份stream，增加复杂度，
+// 其实等所有数据收集完以后，再决定就好了
 func toolCallChecker(_ context.Context, sr *schema.StreamReader[*schema.Message]) (bool, error) {
 	defer sr.Close()
 
@@ -163,8 +168,11 @@ func NewResearcher[I, O any](ctx context.Context) *compose.Graph[I, O] {
 		panic(err)
 	}
 
+	//加载提示词,取第一个step的title和description作为输入，生成提示词
 	_ = cag.AddLambdaNode("load", compose.InvokableLambdaWithOption(loadResearcherMsg))
+	//只调用模型，通过提示词，要求模型按照格式返回Research结构体
 	_ = cag.AddLambdaNode("agent", agentLambda)
+	//将模型返回的Research结构体，反序列化到state.CurrentResearch中，选择下一个节点执行
 	_ = cag.AddLambdaNode("router", compose.InvokableLambdaWithOption(routerResearcher))
 
 	_ = cag.AddEdge(compose.START, "load")

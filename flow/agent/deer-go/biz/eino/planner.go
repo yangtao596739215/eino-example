@@ -100,8 +100,11 @@ func routerPlanner(ctx context.Context, input *schema.Message, opts ...any) (out
 func NewPlanner[I, O any](ctx context.Context) *compose.Graph[I, O] {
 	cag := compose.NewGraph[I, O]()
 
+	//加载提示词
 	_ = cag.AddLambdaNode("load", compose.InvokableLambdaWithOption(loadPlannerMsg))
+	//只调用模型，通过提示词，要求模型按照格式返回Plan结构体
 	_ = cag.AddChatModelNode("agent", infra.PlanModel)
+	//将模型返回的Plan结构体，反序列化到state.CurrentPlan中，选择下一个节点执行
 	_ = cag.AddLambdaNode("router", compose.InvokableLambdaWithOption(routerPlanner))
 
 	_ = cag.AddEdge(compose.START, "load")

@@ -79,8 +79,11 @@ func routerReporter(ctx context.Context, input *schema.Message, opts ...any) (ou
 func NewReporter[I, O any](ctx context.Context) *compose.Graph[I, O] {
 	cag := compose.NewGraph[I, O]()
 
+	//加载提示词
 	_ = cag.AddLambdaNode("load", compose.InvokableLambdaWithOption(loadReporterMsg))
+	//只调用模型，通过提示词，要求模型按照格式返回Report结构体
 	_ = cag.AddChatModelNode("agent", infra.ChatModel)
+	//将模型返回的Report结构体，反序列化到state.CurrentReport中，选择下一个节点执行
 	_ = cag.AddLambdaNode("router", compose.InvokableLambdaWithOption(routerReporter))
 
 	_ = cag.AddEdge(compose.START, "load")

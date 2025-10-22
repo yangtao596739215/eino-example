@@ -78,7 +78,7 @@ func router(ctx context.Context, input *schema.Message, opts ...any) (output str
 	return output, nil
 }
 
-// 整个方法标了范性，但是第一个node的实现确是写死的类型，感觉不标范姓，直接定好更易读一些
+// 整个方法标了泛型，但是第一个node的实现确是写死的类型，感觉不标泛型，直接定好更易读一些
 func NewCAgent[I, O any](ctx context.Context) *compose.Graph[I, O] {
 	cag := compose.NewGraph[I, O]()
 
